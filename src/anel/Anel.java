@@ -18,7 +18,8 @@ public class Anel {
 
 	private static final int ADICIONA = 4000;
 	private static final int REQUISICAO = 2500;
-	private static final int INATIVO_COORDENADOR = 10000;
+//	private static final int INATIVO_COORDENADOR = 10000;
+	private static final int INATIVO_COORDENADOR = 30000;
 	private static final int INATIVO_PROCESSO = 8000;
 //	private static final int CONSOME_RECURSO_MIN = 10000;
 //	private static final int CONSOME_RECURSO_MAX = 25000;
@@ -42,7 +43,6 @@ public class Anel {
 							novoId = processosAtivos.get(processosAtivos.size() - 1).getPid() + 1;
 							processosAtivos.add(new Processo(novoId, false));
 						}
-						//System.out.println("Processo " + novoId + " criado.");
 					}
 
 					try {
@@ -71,7 +71,6 @@ public class Anel {
 							int indexProcessoAleatorio = new Random().nextInt(processosAtivos.size());
 														
 							Processo processoRequisita = processosAtivos.get(indexProcessoAleatorio);
-							//System.out.println("Processo " + processoRequisita + " faz requisicao.");
 							processoRequisita.enviarRequisicao();
 						}
 					}
@@ -94,10 +93,8 @@ public class Anel {
 						if (!processosAtivos.isEmpty()) {
 							int indexProcessoAleatorio = new Random().nextInt(processosAtivos.size());
 							Processo pRemover = processosAtivos.get(indexProcessoAleatorio);
-							if (pRemover != null && !pRemover.isEhCoordenador()) {
-								processosAtivos.remove(pRemover);
-								//System.out.println("Processo "+ pRemover + " inativado.");
-							}
+							if (pRemover != null && !pRemover.isEhCoordenador())
+								pRemover.destruir();
 						}
 					}
 				}
@@ -124,7 +121,7 @@ public class Anel {
 								coordenador = p;
 						}
 						if (coordenador != null){
-							destruirProcesso(coordenador);
+							coordenador.destruir();
 							System.out.println("Processo coordenador " + coordenador + " inativado.");
 						}
 					}
@@ -159,14 +156,5 @@ public class Anel {
 				}
 			}
 		}).start();
-	}
-	
-	private void destruirProcesso(Processo processo) {
-		if(processo.equals(RecursoCompartilhado.getConsumidor())) {
-			processo.interronpeAcessoRecurso();
-			processo.liberarRecurso();
-		}
-		
-		processosAtivos.remove(processo);
 	}
 }

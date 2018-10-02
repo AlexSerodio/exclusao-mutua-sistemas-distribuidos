@@ -48,6 +48,11 @@ public class Processo {
 		return getListaDeEspera().isEmpty();
 	}
 	
+	private void removerDaListaDeEspera(Processo processo) {
+		if(getListaDeEspera().contains(processo))
+			getListaDeEspera().remove(processo);
+	}
+	
 	private LinkedList<Processo> getListaDeEspera() {
 		return encontrarCoordenador().listaDeEspera;
 	}
@@ -70,9 +75,10 @@ public class Processo {
 			}
 		}
 		
-		if(coordenador == null)
+		if(coordenador == null) {
 			coordenador = comecarEleicao();
-		
+			System.out.println("Eleicao concluida com sucesso. O novo coordenador eh " + coordenador + ".");
+		}
 		return coordenador;
 	}
 
@@ -84,7 +90,7 @@ public class Processo {
 			
 		try {
 			if(coordenador.equals(RecursoCompartilhado.getConsumidor()))
-				coordenador.interronpeAcessoRecurso();
+				coordenador.interronperAcessoRecurso();
 		} catch (NullPointerException e) {
 			comecarEleicao();
 		}
@@ -101,11 +107,11 @@ public class Processo {
 	
 	public void acessarRecursoCompartilhado() {
 		
-		// se esse processo ja estiver consumindo o recurso
-		if(this.equals(RecursoCompartilhado.getConsumidor()))
-			return;
+		// se esse processo ja estiver consumindo o recurso ou for um coordenador
+				if(this.equals(RecursoCompartilhado.getConsumidor()) || this.isEhCoordenador())
+					return;
 		
-		System.out.println("Processo " + this + " quer consumir o recurso.");
+		//System.out.println("Processo " + this + " quer consumir o recurso.");
 		
 		if(RecursoCompartilhado.isEmUso())
 			adicionaNaListaDeEspera(this);
@@ -131,9 +137,8 @@ public class Processo {
 				RecursoCompartilhado.setEmUso(true, processo);
 				try {
 					Thread.sleep(randomUsageTime);
-				} catch (InterruptedException e) {
-					
-				}
+				} catch (InterruptedException e) { }
+				
 				System.out.println("Processo " + processo + " parou de consumir o recurso.");
 				processo.liberarRecurso();
 			}
@@ -141,24 +146,32 @@ public class Processo {
 		utilizaRecurso.start();
 	}
 	
-	// TODO tratar quando ocorrer nullPointer no if
 	public void liberarRecurso() {
 		RecursoCompartilhado.setEmUso(false, this);
 		
 		if(!isListaDeEsperaEmpty()) {
-			Processo processoEmEspera = getListaDeEspera().removeLast();
+			Processo processoEmEspera = getListaDeEspera().removeFirst();
 			processoEmEspera.acessarRecursoCompartilhado();
-			System.out.println("Processo " + processoEmEspera + " foi remivido da lista de espera.");
+			System.out.println("Processo " + processoEmEspera + " foi removido da lista de espera.");
 			System.out.println("Lista de espera: " + getListaDeEspera());
 		}
 	}
 	
-	public void interronpeAcessoRecurso() {
-		if(utilizaRecurso != null) {
+	public void interronperAcessoRecurso() {
+		if(utilizaRecurso != null)
 			utilizaRecurso.interrupt();
-			System.out.println("Processo " + this + " parou de consumir o recurso.");
-			this.liberarRecurso();
+	}
+	
+	public void destruir() {
+		if(this.equals(RecursoCompartilhado.getConsumidor())) {
+			interronperAcessoRecurso();
+			liberarRecurso();
 		}
+		
+		if(!this.isEhCoordenador())
+			removerDaListaDeEspera(this);
+		
+		Anel.processosAtivos.remove(this);
 	}
 	
 	@Override

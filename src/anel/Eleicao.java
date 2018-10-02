@@ -5,9 +5,8 @@ import java.util.LinkedList;
 public class Eleicao {
 	
 	public Processo realizarEleicao(int idProcessoIniciador) {
-		//System.out.println("Processo de eleicao iniciado");
-		
 		LinkedList<Integer> idProcessosConsultados = new LinkedList<>();
+		
 		for (Processo p : Anel.processosAtivos)
 			consultarProcesso(p.getPid(), idProcessosConsultados);
 		
@@ -19,7 +18,6 @@ public class Eleicao {
 		
 		Processo coordenador = atualizarCoordenador(idNovoCoordenador);
 		
-		System.out.println("Eleicao concluida com sucesso. O novo coordenador eh " + idNovoCoordenador + ".");
 		return coordenador;
 	}
 	
