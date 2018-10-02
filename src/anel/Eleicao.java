@@ -2,6 +2,11 @@ package anel;
 
 import java.util.LinkedList;
 
+/**
+ * 
+ * @author Alex Serodio Goncalves e Luma Kuhl
+ *
+ */
 public class Eleicao {
 	
 	public Processo realizarEleicao(int idProcessoIniciador) {

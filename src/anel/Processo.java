@@ -107,19 +107,18 @@ public class Processo {
 	
 	public void acessarRecursoCompartilhado() {
 		
-		// se esse processo ja estiver consumindo o recurso ou for um coordenador
-				if(this.equals(RecursoCompartilhado.getConsumidor()) || this.isEhCoordenador())
-					return;
+		if(RecursoCompartilhado.isUsandoRecurso(this) || this.isEhCoordenador())
+			return;
 		
 		//System.out.println("Processo " + this + " quer consumir o recurso.");
 		
 		if(RecursoCompartilhado.isEmUso())
-			adicionaNaListaDeEspera(this);
+			adicionarNaListaDeEspera(this);
 		else
 			utilizarRecurso(this);
 	}
 	
-	public void adicionaNaListaDeEspera(Processo processoEmEspera) {
+	public void adicionarNaListaDeEspera(Processo processoEmEspera) {
 		getListaDeEspera().add(processoEmEspera);
 		
 		System.out.println("Processo " + this + " foi adicionado na lista de espera.");
@@ -146,7 +145,7 @@ public class Processo {
 		utilizaRecurso.start();
 	}
 	
-	public void liberarRecurso() {
+	private void liberarRecurso() {
 		RecursoCompartilhado.setEmUso(false, this);
 		
 		if(!isListaDeEsperaEmpty()) {
@@ -157,13 +156,13 @@ public class Processo {
 		}
 	}
 	
-	public void interronperAcessoRecurso() {
+	private void interronperAcessoRecurso() {
 		if(utilizaRecurso != null)
 			utilizaRecurso.interrupt();
 	}
 	
 	public void destruir() {
-		if(this.equals(RecursoCompartilhado.getConsumidor())) {
+		if(RecursoCompartilhado.isUsandoRecurso(this)) {
 			interronperAcessoRecurso();
 			liberarRecurso();
 		}

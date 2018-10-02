@@ -1,5 +1,10 @@
 package anel;
 
+/**
+ * 
+ * @author Alex Serodio Goncalves e Luma Kuhl
+ *
+ */
 public class RecursoCompartilhado {
 
 	private static int conteudo;
@@ -24,6 +29,10 @@ public class RecursoCompartilhado {
 	
 	public static boolean isEmUso() {
 		return emUso;
+	}
+	
+	public static boolean isUsandoRecurso(Processo consumidor) {
+		return consumidor.equals(RecursoCompartilhado.getConsumidor());
 	}
 	
 	public static void setEmUso(boolean estaEmUso, Processo processo) {
