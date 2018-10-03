@@ -17,12 +17,11 @@ import java.util.Random;
 public class Anel {
 
 	private static final int ADICIONA = 4000;
-	private static final int REQUISICAO = 2500;
-//	private static final int INATIVO_COORDENADOR = 10000;
-	private static final int INATIVO_COORDENADOR = 30000;
 	private static final int INATIVO_PROCESSO = 8000;
+//	private static final int INATIVO_COORDENADOR = 10000;
 //	private static final int CONSOME_RECURSO_MIN = 10000;
 //	private static final int CONSOME_RECURSO_MAX = 25000;
+	private static final int INATIVO_COORDENADOR = 30000;
 	private static final int CONSOME_RECURSO_MIN = 5000;
 	private static final int CONSOME_RECURSO_MAX = 10000;
 	
@@ -55,30 +54,6 @@ public class Anel {
 		}).start();
 	}
 
-	public void fazerRequisicoes () {
-		new Thread(new Runnable() {
-			@Override
-			public void run() {
-				while (true) {
-					try {
-						Thread.sleep(REQUISICAO);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-					
-					synchronized (lock) {
-						if (processosAtivos.size() > 0) {
-							int indexProcessoAleatorio = new Random().nextInt(processosAtivos.size());
-														
-							Processo processoRequisita = processosAtivos.get(indexProcessoAleatorio);
-							processoRequisita.enviarRequisicao();
-						}
-					}
-				}
-			}
-		}).start();
-	}
-	
 	public void inativarProcesso () {
 		new Thread(new Runnable() {
 			public void run() {

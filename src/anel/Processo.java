@@ -11,9 +11,12 @@ import java.util.Random;
 public class Processo {
 	
 	private int pid;
-	private LinkedList<Processo> listaDeEspera;
-	private boolean ehCoordenador;
 	private Thread utilizaRecurso;
+	//private Conexao conexao = new Conexao();
+	
+	private boolean ehCoordenador;
+	private LinkedList<Processo> listaDeEspera;
+	private boolean recursoEmUso;
 	
 //	private static final int USO_PROCESSO_MIN = 5000;
 //	private static final int USO_PROCESSO_MAX = 15000;
@@ -40,8 +43,27 @@ public class Processo {
 
 	public void setEhCoordenador(boolean ehCoordenador) {
 		this.ehCoordenador = ehCoordenador;
-		if(this.ehCoordenador)
+		if(this.ehCoordenador) {
 			listaDeEspera = new LinkedList<>();
+			//conexao.ativarServidor();
+			
+			Processo consumidor = RecursoCompartilhado.getConsumidor();
+			if(consumidor != null)
+				consumidor.interronperAcessoRecurso();
+			
+			recursoEmUso = false;
+		}
+	}
+	
+	public boolean isRecursoEmUso() {
+		return encontrarCoordenador().recursoEmUso;
+	}
+	
+	public void setRecursoEmUso(boolean estaEmUso, Processo processo) {
+		Processo coordenador = encontrarCoordenador();
+		
+		coordenador.recursoEmUso = estaEmUso;
+		RecursoCompartilhado.setConsumidor(coordenador.recursoEmUso ? processo : null);
 	}
 	
 	public boolean isListaDeEsperaEmpty() {
@@ -55,15 +77,6 @@ public class Processo {
 	
 	private LinkedList<Processo> getListaDeEspera() {
 		return encontrarCoordenador().listaDeEspera;
-	}
-	
-	public boolean enviarRequisicao() {
-		Processo coordenador = encontrarCoordenador();
-		
-		boolean resultadoRequisicao = coordenador.receberRequisicao(this.pid);
-		
-		//System.out.println("Fim da requisicao.");
-		return resultadoRequisicao;
 	}
 	
 	private Processo encontrarCoordenador() {
@@ -82,8 +95,6 @@ public class Processo {
 		return coordenador;
 	}
 
-	// TODO quando o coordenador morre o recurso precisa ser liberado
-	
 	private Processo comecarEleicao() {
 		Eleicao eleicao = new Eleicao();
 		Processo coordenador = eleicao.realizarEleicao(getPid());
@@ -96,23 +107,12 @@ public class Processo {
 		}
 		return coordenador;
 	}
-
-	private boolean receberRequisicao(int pidOrigemRequisicao) {
-		
-		/* TRATAMENTO DA REQUISICAO AQUI... */
-		
-		//System.out.println("Requisicao do processo " + pidOrigemRequisicao + " recebida com sucesso.");
-		return true;
-	}
 	
 	public void acessarRecursoCompartilhado() {
-		
 		if(RecursoCompartilhado.isUsandoRecurso(this) || this.isEhCoordenador())
 			return;
 		
-		//System.out.println("Processo " + this + " quer consumir o recurso.");
-		
-		if(RecursoCompartilhado.isEmUso())
+		if(isRecursoEmUso())
 			adicionarNaListaDeEspera(this);
 		else
 			utilizarRecurso(this);
@@ -133,7 +133,7 @@ public class Processo {
 			@Override
 			public void run() {
 				System.out.println("Processo " + processo + " está consumindo o recurso por " + randomUsageTime + " ms.");
-				RecursoCompartilhado.setEmUso(true, processo);
+				setRecursoEmUso(true, processo);
 				try {
 					Thread.sleep(randomUsageTime);
 				} catch (InterruptedException e) { }
@@ -146,7 +146,7 @@ public class Processo {
 	}
 	
 	private void liberarRecurso() {
-		RecursoCompartilhado.setEmUso(false, this);
+		setRecursoEmUso(false, this);
 		
 		if(!isListaDeEsperaEmpty()) {
 			Processo processoEmEspera = getListaDeEspera().removeFirst();

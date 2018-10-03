@@ -9,7 +9,6 @@ public class RecursoCompartilhado {
 
 	private static int conteudo;
 	private static Processo consumidor;
-	private static boolean emUso;
 	
 	private RecursoCompartilhado() { 
 		
@@ -26,17 +25,17 @@ public class RecursoCompartilhado {
 	public static void setConsumidor(Processo novoConsumidor) {
 		consumidor = novoConsumidor;
 	}
-	
+	/*
 	public static boolean isEmUso() {
 		return emUso;
-	}
-	
-	public static boolean isUsandoRecurso(Processo consumidor) {
-		return consumidor.equals(RecursoCompartilhado.getConsumidor());
 	}
 	
 	public static void setEmUso(boolean estaEmUso, Processo processo) {
 		emUso = estaEmUso;
 		setConsumidor(emUso ? processo : null);
+	}
+	*/
+	public static boolean isUsandoRecurso(Processo consumidor) {
+		return consumidor.equals(RecursoCompartilhado.getConsumidor());
 	}
 }

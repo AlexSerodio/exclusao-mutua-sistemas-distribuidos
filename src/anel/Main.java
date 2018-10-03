@@ -11,7 +11,6 @@ public class Main {
 		Anel anelLogico = new Anel();
 		
 		anelLogico.criarProcessos();
-		anelLogico.fazerRequisicoes();
 		anelLogico.inativarCoordenador();
 		anelLogico.inativarProcesso();
 		anelLogico.acessarRecurso();
