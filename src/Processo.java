@@ -16,8 +16,6 @@ public class Processo {
 	private LinkedList<Processo> listaDeEspera;
 	private boolean recursoEmUso;
 	
-//	private static final int USO_PROCESSO_MIN = 5000;
-//	private static final int USO_PROCESSO_MAX = 15000;
 	private static final int USO_PROCESSO_MIN = 10000;
 	private static final int USO_PROCESSO_MAX = 20000;
 	
@@ -45,9 +43,8 @@ public class Processo {
 			listaDeEspera = new LinkedList<>();
 			conexao.conectar(this);
 			
-			Processo consumidor = RecursoCompartilhado.getConsumidor();
-			if(consumidor != null)
-				consumidor.interronperAcessoRecurso();
+			if(RecursoCompartilhado.isSendoConsumido())
+				RecursoCompartilhado.getConsumidor().interronperAcessoRecurso();
 			
 			recursoEmUso = false;
 		}
@@ -116,7 +113,7 @@ public class Processo {
 		else if(resultado.equals(Conexao.NEGAR_ACESSO))
 			adicionarNaListaDeEspera(this);
 		else
-			System.out.println("ERROR. A mensagem recebida nao foi compreendida");
+			System.out.println("ERROR. A mensagem recebida nao foi compreendida.");
 	}
 	
 	public void adicionarNaListaDeEspera(Processo processoEmEspera) {
@@ -157,23 +154,22 @@ public class Processo {
 		}
 	}
 	
-	private void interronperAcessoRecurso() {
-		if(utilizaRecurso != null)
-			utilizaRecurso.interrupt();
-	}
-	
 	public void destruir() {
-		if(RecursoCompartilhado.isUsandoRecurso(this)) {
-			interronperAcessoRecurso();
-			liberarRecurso();
-		}
-		
-		if(!this.isEhCoordenador())
+		if(!this.isEhCoordenador()) {
 			removerDaListaDeEspera(this);
-		else
+			if(RecursoCompartilhado.isUsandoRecurso(this)) {
+				interronperAcessoRecurso();
+				liberarRecurso();
+			}
+		} else
 			conexao.encerrarConexao();
 		
 		Anel.processosAtivos.remove(this);
+	}
+	
+	private void interronperAcessoRecurso() {
+		if(utilizaRecurso != null)
+			utilizaRecurso.interrupt();
 	}
 	
 	@Override

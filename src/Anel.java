@@ -1,24 +1,15 @@
 import java.util.ArrayList;
 import java.util.Random;
 
-
 /**
- * @author Alex Serodio Goncalves e Luma Kuhl
  * 
- * 1. a cada 30 segundos um novo processo deve ser criado;
- * 2. a cada 25 segundos um processo deve fazer uma requisicao para o coordenador;
- * 3. a cada 100 segundos o coordenador fica inativo;
- * 4. a cada 80 segundos um processo da lista de processos fica inativo;
- * 5. dois processos nao podem ter o mesmo ID;
- * 6. dois processos de eleicao nao podem acontecer simultaneamente.
+ * @author Alex Serodio Goncalves e Luma Kuhl
+ *
  */
 public class Anel {
 
 	private static final int ADICIONA = 4000;
 	private static final int INATIVO_PROCESSO = 8000;
-//	private static final int INATIVO_COORDENADOR = 10000;
-//	private static final int CONSOME_RECURSO_MIN = 10000;
-//	private static final int CONSOME_RECURSO_MAX = 25000;
 	private static final int INATIVO_COORDENADOR = 30000;
 	private static final int CONSOME_RECURSO_MIN = 5000;
 	private static final int CONSOME_RECURSO_MAX = 10000;
