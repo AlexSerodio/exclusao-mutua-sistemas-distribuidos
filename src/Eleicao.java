@@ -1,5 +1,3 @@
-package anel;
-
 import java.util.LinkedList;
 
 /**
@@ -32,7 +30,7 @@ public class Eleicao {
 	
 	private Processo atualizarCoordenador(int idNovoCoordenador) {
 		Processo coordenador = null;
-		for (Processo p : Anel.processosAtivos) {			
+		for (Processo p : Anel.processosAtivos) {
 			if (p.getPid() == idNovoCoordenador) {
 				p.setEhCoordenador(true);
 				coordenador = p;

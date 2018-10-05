@@ -1,5 +1,3 @@
-package anel;
-
 import java.util.ArrayList;
 import java.util.Random;
 

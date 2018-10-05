@@ -1,5 +1,3 @@
-package anel;
-
 /**
  * 
  * @author Alex Serodio Goncalves e Luma Kuhl

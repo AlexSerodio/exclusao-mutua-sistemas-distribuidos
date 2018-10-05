@@ -1,5 +1,3 @@
-package anel;
-
 import java.util.LinkedList;
 import java.util.Random;
 
@@ -12,7 +10,7 @@ public class Processo {
 	
 	private int pid;
 	private Thread utilizaRecurso;
-	//private Conexao conexao = new Conexao();
+	private Conexao conexao = new Conexao();
 	
 	private boolean ehCoordenador;
 	private LinkedList<Processo> listaDeEspera;
@@ -45,7 +43,7 @@ public class Processo {
 		this.ehCoordenador = ehCoordenador;
 		if(this.ehCoordenador) {
 			listaDeEspera = new LinkedList<>();
-			//conexao.ativarServidor();
+			conexao.conectar(this);
 			
 			Processo consumidor = RecursoCompartilhado.getConsumidor();
 			if(consumidor != null)
@@ -98,13 +96,10 @@ public class Processo {
 	private Processo comecarEleicao() {
 		Eleicao eleicao = new Eleicao();
 		Processo coordenador = eleicao.realizarEleicao(getPid());
-			
-		try {
-			if(coordenador.equals(RecursoCompartilhado.getConsumidor()))
-				coordenador.interronperAcessoRecurso();
-		} catch (NullPointerException e) {
+		
+		if(coordenador == null)
 			comecarEleicao();
-		}
+		
 		return coordenador;
 	}
 	
@@ -112,10 +107,16 @@ public class Processo {
 		if(RecursoCompartilhado.isUsandoRecurso(this) || this.isEhCoordenador())
 			return;
 		
-		if(isRecursoEmUso())
+		String resultado = conexao.realizarRequisicao("Processo " + this + " quer consumir o recurso.\n");
+		
+		System.out.println("Resultado da requisicao do processo " + this + ": " + resultado);
+		
+		if(resultado.equals(Conexao.PERMITIR_ACESSO))
+			utilizarRecurso(this);
+		else if(resultado.equals(Conexao.NEGAR_ACESSO))
 			adicionarNaListaDeEspera(this);
 		else
-			utilizarRecurso(this);
+			System.out.println("ERROR. A mensagem recebida nao foi compreendida");
 	}
 	
 	public void adicionarNaListaDeEspera(Processo processoEmEspera) {
@@ -169,6 +170,8 @@ public class Processo {
 		
 		if(!this.isEhCoordenador())
 			removerDaListaDeEspera(this);
+		else
+			conexao.encerrarConexao();
 		
 		Anel.processosAtivos.remove(this);
 	}
