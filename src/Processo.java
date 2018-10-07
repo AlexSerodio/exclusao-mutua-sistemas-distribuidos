@@ -76,13 +76,7 @@ public class Processo {
 	}
 	
 	private Processo encontrarCoordenador() {
-		Processo coordenador = null;
-		for (Processo p : ControladorDeProcessos.getProcessosAtivos()) {
-			if (p.isCoordenador()) {
-				coordenador = p;
-				break;
-			}
-		}
+		Processo coordenador = ControladorDeProcessos.getCoordenador();
 		
 		if(coordenador == null) {
 			Eleicao eleicao = new Eleicao();

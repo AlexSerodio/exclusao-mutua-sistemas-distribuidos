@@ -8,7 +8,7 @@ public class RecursoCompartilhado {
 	private static int conteudo;
 	private static Processo consumidor;
 	
-	private RecursoCompartilhado() { 
+	private RecursoCompartilhado() {
 		
 	}
 	

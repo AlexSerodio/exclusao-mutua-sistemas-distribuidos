@@ -58,6 +58,45 @@ public class Conexao {
 		}).start();
 	}
 	
+	public void conectar(Processo coordenador, int porta) {
+		System.out.println("Servidor " + coordenador + " pronto para receber requisicoes.");
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					// cria um socket TCP para pedidos de conexão
+					listenSocket = new ServerSocket(porta);
+					
+					// fica conectado enquanto o coordenador estiver vivo
+					while(conectado) {
+						// aguarda ate um cliente pedir por uma conexao
+						sock = listenSocket.accept();
+
+						// prepara um buffer para receber dados do cliente
+						InputStreamReader s = new InputStreamReader(sock.getInputStream());
+						BufferedReader rec = new BufferedReader(s);
+
+						// le os dados enviados pelo cliente
+						String rBuf = rec.readLine();
+						System.out.println(rBuf);
+						
+						// coloca a resposta em um buffer e envia para o cliente
+						DataOutputStream d = new DataOutputStream(sock.getOutputStream());
+						String sBuf = "Error!\n";
+						if(coordenador.isRecursoEmUso())
+							sBuf = NEGAR_ACESSO + "\n";
+						else
+							sBuf = PERMITIR_ACESSO + "\n";
+						d.write(sBuf.getBytes("UTF-8"));
+					}
+					System.out.println("Conexao encerrada.");
+				} catch (IOException e) {
+					System.out.println("Conexao encerrada.");
+				}
+			}
+		}).start();
+	}
+	
 	public String realizarRequisicao(String mensagem) {
 		String rBuf = "ERROR!";
 		try {
