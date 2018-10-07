@@ -6,7 +6,7 @@
 public class Main {
 	
 	public static void main(String[] args) {
-		Anel anelLogico = new Anel();
+		ControladorDeProcessos anelLogico = new ControladorDeProcessos();
 		
 		anelLogico.criarProcessos();
 		anelLogico.inativarCoordenador();

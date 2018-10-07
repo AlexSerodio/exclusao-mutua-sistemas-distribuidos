@@ -19,30 +19,6 @@ public class Conexao {
 	private Socket sock;
 	private ServerSocket listenSocket;
 	
-	public String realizarRequisicao(String mensagem) {
-		String rBuf = "ERROR!";
-		try {
-			// cria um socket TCP para conexao com localhost:PORTA
-			Socket sock = new Socket("localhost", PORTA);
-
-			// coloca os dados em um buffer e envia para o servidor
-			DataOutputStream d = new DataOutputStream(sock.getOutputStream());
-			d.write(mensagem.getBytes("UTF-8"));
-
-			// prepara um buffer para receber a resposta do servidor
-			InputStreamReader s = new InputStreamReader(sock.getInputStream());
-			BufferedReader rec = new BufferedReader(s);
-			
-			// le os dados enviados pela aplicacao servidora
-			rBuf = rec.readLine();
-
-			sock.close();
-		} catch (Exception e) {
-			System.out.println("Ocorreu um erro. A requisicao nao foi finalizada.");
-		}
-		return rBuf;
-	}
-	
 	public void conectar(Processo coordenador) {
 		System.out.println("Servidor " + coordenador + " pronto para receber requisicoes.");
 		new Thread(new Runnable() {
@@ -80,6 +56,30 @@ public class Conexao {
 				}
 			}
 		}).start();
+	}
+	
+	public String realizarRequisicao(String mensagem) {
+		String rBuf = "ERROR!";
+		try {
+			// cria um socket TCP para conexao com localhost:PORTA
+			Socket sock = new Socket("localhost", PORTA);
+
+			// coloca os dados em um buffer e envia para o servidor
+			DataOutputStream d = new DataOutputStream(sock.getOutputStream());
+			d.write(mensagem.getBytes("UTF-8"));
+
+			// prepara um buffer para receber a resposta do servidor
+			InputStreamReader s = new InputStreamReader(sock.getInputStream());
+			BufferedReader rec = new BufferedReader(s);
+			
+			// le os dados enviados pela aplicacao servidora
+			rBuf = rec.readLine();
+
+			sock.close();
+		} catch (Exception e) {
+			System.out.println("Ocorreu um erro. A requisicao nao foi finalizada.");
+		}
+		return rBuf;
 	}
 	
 	public void encerrarConexao() {

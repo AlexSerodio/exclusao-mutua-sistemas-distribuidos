@@ -9,10 +9,11 @@ import java.util.Random;
 public class Processo {
 	
 	private int pid;
-	private Thread utilizaRecurso;
+	private boolean ehCoordenador = false;
+	private Thread utilizaRecurso = new Thread();
 	private Conexao conexao = new Conexao();
 	
-	private boolean ehCoordenador = false;
+	// variaveis utilizadas apenas pelo coordenador
 	private LinkedList<Processo> listaDeEspera;
 	private boolean recursoEmUso;
 	
@@ -45,18 +46,27 @@ public class Processo {
 		}
 	}
 	
+	private void interronperAcessoRecurso() {
+		if(utilizaRecurso.isAlive())
+			utilizaRecurso.interrupt();
+	}
+	
 	public boolean isRecursoEmUso() {
 		return encontrarCoordenador().recursoEmUso;
 	}
 	
-	public void setRecursoEmUso(boolean estaEmUso, Processo processo) {
+	public void setRecursoEmUso(boolean estaEmUso, Processo consumidor) {
 		Processo coordenador = encontrarCoordenador();
 		
 		coordenador.recursoEmUso = estaEmUso;
-		RecursoCompartilhado.setConsumidor(coordenador.recursoEmUso ? processo : null);
+		RecursoCompartilhado.setConsumidor(estaEmUso ? consumidor : null);
 	}
 	
-	public boolean isListaDeEsperaEmpty() {
+	private LinkedList<Processo> getListaDeEspera() {
+		return encontrarCoordenador().listaDeEspera;
+	}
+	
+	public boolean isListaDeEsperaVazia() {
 		return getListaDeEspera().isEmpty();
 	}
 	
@@ -65,35 +75,22 @@ public class Processo {
 			getListaDeEspera().remove(processo);
 	}
 	
-	private LinkedList<Processo> getListaDeEspera() {
-		return encontrarCoordenador().listaDeEspera;
-	}
-	
 	private Processo encontrarCoordenador() {
 		Processo coordenador = null;
-		for (Processo p : Anel.getProcessosAtivos()) {
+		for (Processo p : ControladorDeProcessos.getProcessosAtivos()) {
 			if (p.isCoordenador()) {
 				coordenador = p;
 				break;
 			}
 		}
 		
-		if(coordenador == null)
-			coordenador = comecarEleicao();
-		
+		if(coordenador == null) {
+			Eleicao eleicao = new Eleicao();
+			coordenador = eleicao.realizarEleicao(this.getPid());
+		}
 		return coordenador;
 	}
 
-	private Processo comecarEleicao() {
-		Eleicao eleicao = new Eleicao();
-		Processo coordenador = eleicao.realizarEleicao(getPid());
-		
-		if(coordenador == null)
-			return comecarEleicao();
-		
-		return coordenador;
-	}
-	
 	public void acessarRecursoCompartilhado() {
 		if(RecursoCompartilhado.isUsandoRecurso(this) || this.isCoordenador())
 			return;
@@ -106,11 +103,9 @@ public class Processo {
 			utilizarRecurso(this);
 		else if(resultado.equals(Conexao.NEGAR_ACESSO))
 			adicionarNaListaDeEspera(this);
-		else
-			System.out.println("ERROR. A mensagem recebida nao foi compreendida.");
 	}
 	
-	public void adicionarNaListaDeEspera(Processo processoEmEspera) {
+	private void adicionarNaListaDeEspera(Processo processoEmEspera) {
 		getListaDeEspera().add(processoEmEspera);
 		
 		System.out.println("Processo " + this + " foi adicionado na lista de espera.");
@@ -126,6 +121,7 @@ public class Processo {
 			public void run() {
 				System.out.println("Processo " + processo + " está consumindo o recurso por " + randomUsageTime + " ms.");
 				setRecursoEmUso(true, processo);
+				
 				try {
 					Thread.sleep(randomUsageTime);
 				} catch (InterruptedException e) { }
@@ -140,7 +136,7 @@ public class Processo {
 	private void liberarRecurso() {
 		setRecursoEmUso(false, this);
 		
-		if(!isListaDeEsperaEmpty()) {
+		if(!isListaDeEsperaVazia()) {
 			Processo processoEmEspera = getListaDeEspera().removeFirst();
 			processoEmEspera.acessarRecursoCompartilhado();
 			System.out.println("Processo " + processoEmEspera + " foi removido da lista de espera.");
@@ -149,23 +145,19 @@ public class Processo {
 	}
 	
 	public void destruir() {
-		if(!this.isCoordenador()) {
+		if(isCoordenador()) {
+			conexao.encerrarConexao();
+		} else {
 			removerDaListaDeEspera(this);
 			if(RecursoCompartilhado.isUsandoRecurso(this)) {
 				interronperAcessoRecurso();
 				liberarRecurso();
 			}
-		} else
-			conexao.encerrarConexao();
-		
-		Anel.removerProcesso(this);
+		}
+			
+		ControladorDeProcessos.removerProcesso(this);
 	}
-	
-	private void interronperAcessoRecurso() {
-		if(utilizaRecurso != null)
-			utilizaRecurso.interrupt();
-	}
-	
+
 	@Override
 	public boolean equals(Object objeto) {
 		Processo processo = (Processo) objeto;

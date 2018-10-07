@@ -6,14 +6,13 @@ import java.util.Random;
  * @author Alex Serodio Goncalves e Luma Kuhl
  *
  */
-public class Anel {
+public class ControladorDeProcessos {
 
 	private static final int ADICIONA = 4000;
 	private static final int INATIVO_PROCESSO = 8000;
 	private static final int INATIVO_COORDENADOR = 30000;
 	private static final int CONSOME_RECURSO_MIN = 5000;
 	private static final int CONSOME_RECURSO_MAX = 10000;
-	
 
 	private static ArrayList<Processo> processosAtivos = new ArrayList<Processo>();
 	private final Object lock = new Object();
