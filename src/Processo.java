@@ -12,7 +12,7 @@ public class Processo {
 	private Thread utilizaRecurso;
 	private Conexao conexao = new Conexao();
 	
-	private boolean ehCoordenador;
+	private boolean ehCoordenador = false;
 	private LinkedList<Processo> listaDeEspera;
 	private boolean recursoEmUso;
 	
@@ -24,16 +24,11 @@ public class Processo {
 		setEhCoordenador(false);
 	}
 	
-	public Processo(int pid, boolean ehCoordenador) {
-		this.pid = pid;
-		setEhCoordenador(ehCoordenador);
-	}
-	
 	public int getPid() {
 		return pid;
 	}
 	
-	public boolean isEhCoordenador() {
+	public boolean isCoordenador() {
 		return ehCoordenador;
 	}
 
@@ -76,17 +71,16 @@ public class Processo {
 	
 	private Processo encontrarCoordenador() {
 		Processo coordenador = null;
-		for (Processo p : Anel.processosAtivos) {
-			if (p.isEhCoordenador()) {
+		for (Processo p : Anel.getProcessosAtivos()) {
+			if (p.isCoordenador()) {
 				coordenador = p;
 				break;
 			}
 		}
 		
-		if(coordenador == null) {
+		if(coordenador == null)
 			coordenador = comecarEleicao();
-			System.out.println("Eleicao concluida com sucesso. O novo coordenador eh " + coordenador + ".");
-		}
+		
 		return coordenador;
 	}
 
@@ -95,13 +89,13 @@ public class Processo {
 		Processo coordenador = eleicao.realizarEleicao(getPid());
 		
 		if(coordenador == null)
-			comecarEleicao();
+			return comecarEleicao();
 		
 		return coordenador;
 	}
 	
 	public void acessarRecursoCompartilhado() {
-		if(RecursoCompartilhado.isUsandoRecurso(this) || this.isEhCoordenador())
+		if(RecursoCompartilhado.isUsandoRecurso(this) || this.isCoordenador())
 			return;
 		
 		String resultado = conexao.realizarRequisicao("Processo " + this + " quer consumir o recurso.\n");
@@ -155,7 +149,7 @@ public class Processo {
 	}
 	
 	public void destruir() {
-		if(!this.isEhCoordenador()) {
+		if(!this.isCoordenador()) {
 			removerDaListaDeEspera(this);
 			if(RecursoCompartilhado.isUsandoRecurso(this)) {
 				interronperAcessoRecurso();
@@ -164,7 +158,7 @@ public class Processo {
 		} else
 			conexao.encerrarConexao();
 		
-		Anel.processosAtivos.remove(this);
+		Anel.removerProcesso(this);
 	}
 	
 	private void interronperAcessoRecurso() {
@@ -173,8 +167,8 @@ public class Processo {
 	}
 	
 	@Override
-	public boolean equals(Object obj) {
-		Processo processo = (Processo) obj;
+	public boolean equals(Object objeto) {
+		Processo processo = (Processo) objeto;
 		if(processo == null)
 			return false;
 		

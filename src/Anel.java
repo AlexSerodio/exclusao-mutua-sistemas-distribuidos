@@ -15,49 +15,61 @@ public class Anel {
 	private static final int CONSOME_RECURSO_MAX = 10000;
 	
 
-	public static ArrayList<Processo> processosAtivos = new ArrayList<Processo>();
+	private static ArrayList<Processo> processosAtivos = new ArrayList<Processo>();
 	private final Object lock = new Object();
 
+	public static ArrayList<Processo> getProcessosAtivos() {
+		return processosAtivos;
+	}
+	
+	public static void removerProcesso(Processo processo) {
+		processosAtivos.remove(processo);
+	}
+	
 	public void criarProcessos () {
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
-				int novoId = 1;
 				while (true) {
 					synchronized (lock) {
-						if (processosAtivos.isEmpty()) {
-							processosAtivos.add(new Processo(1, true));
-						} else {
-							novoId = processosAtivos.get(processosAtivos.size() - 1).getPid() + 1;
-							processosAtivos.add(new Processo(novoId, false));
-						}
-					}
+						Processo processo = new Processo(gerarIdUnico());
+						
+						if (processosAtivos.isEmpty())
+							processo.setEhCoordenador(true);
 
-					try {
-						Thread.sleep(ADICIONA);
-					} catch (Exception e) {
-						e.printStackTrace();
+						processosAtivos.add(processo);
 					}
+					
+					esperar(ADICIONA);
+					
 				}
 			}
 		}).start();
+	}
+
+	private int gerarIdUnico() {
+		Random random = new Random();
+		int idRandom = random.nextInt(1000);
+		
+		for(Processo p : processosAtivos) {
+			if(p.getPid() == idRandom)
+				return gerarIdUnico();
+		}
+		
+		return idRandom;
 	}
 
 	public void inativarProcesso () {
 		new Thread(new Runnable() {
 			public void run() {
 				while (true) {
-					try {
-						Thread.sleep(INATIVO_PROCESSO);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
+					esperar(INATIVO_PROCESSO);
 					
 					synchronized (lock) {
 						if (!processosAtivos.isEmpty()) {
 							int indexProcessoAleatorio = new Random().nextInt(processosAtivos.size());
 							Processo pRemover = processosAtivos.get(indexProcessoAleatorio);
-							if (pRemover != null && !pRemover.isEhCoordenador())
+							if (pRemover != null && !pRemover.isCoordenador())
 								pRemover.destruir();
 						}
 					}
@@ -72,45 +84,36 @@ public class Anel {
 			@Override
 			public void run() {
 				while (true) {
-					try {
-						Thread.sleep(INATIVO_COORDENADOR);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
+					esperar(INATIVO_COORDENADOR);
 					
 					synchronized (lock) {
 						Processo coordenador = null;
 						for (Processo p : processosAtivos) {
-							if (p.isEhCoordenador())
+							if (p.isCoordenador())
 								coordenador = p;
 						}
 						if (coordenador != null){
 							coordenador.destruir();
-							System.out.println("Processo coordenador " + coordenador + " inativado.");
+							System.out.println("Processo coordenador " + coordenador + " destruido.");
 						}
 					}
 				}
 			}
 		}).start();
 	}
-	
+
 	public void acessarRecurso() {
 		new Thread(new Runnable() {
-
 			@Override
 			public void run() {
 				Random random = new Random();
 				int intervalo = 0;
 				while (true) {
-					try {
-						intervalo = CONSOME_RECURSO_MIN + random.nextInt(CONSOME_RECURSO_MAX - CONSOME_RECURSO_MIN);
-						Thread.sleep(intervalo);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
+					intervalo = random.nextInt(CONSOME_RECURSO_MAX - CONSOME_RECURSO_MIN);
+					esperar(CONSOME_RECURSO_MIN + intervalo);
 					
 					synchronized (lock) {
-						if (processosAtivos.size() > 0) {
+						if (!processosAtivos.isEmpty()) {
 							int indexProcessoAleatorio = new Random().nextInt(processosAtivos.size());
 														
 							Processo processoConsumidor = processosAtivos.get(indexProcessoAleatorio);
@@ -121,4 +124,13 @@ public class Anel {
 			}
 		}).start();
 	}
+	
+	private void esperar(int segundos) {
+		try {
+			Thread.sleep(segundos);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 }

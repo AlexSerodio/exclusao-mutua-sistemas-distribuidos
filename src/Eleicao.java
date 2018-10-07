@@ -10,7 +10,7 @@ public class Eleicao {
 	public Processo realizarEleicao(int idProcessoIniciador) {
 		LinkedList<Integer> idProcessosConsultados = new LinkedList<>();
 		
-		for (Processo p : Anel.processosAtivos)
+		for (Processo p : Anel.getProcessosAtivos())
 			consultarProcesso(p.getPid(), idProcessosConsultados);
 		
 		int idNovoCoordenador = idProcessoIniciador;
@@ -30,7 +30,7 @@ public class Eleicao {
 	
 	private Processo atualizarCoordenador(int idNovoCoordenador) {
 		Processo coordenador = null;
-		for (Processo p : Anel.processosAtivos) {
+		for (Processo p : Anel.getProcessosAtivos()) {
 			if (p.getPid() == idNovoCoordenador) {
 				p.setEhCoordenador(true);
 				coordenador = p;
