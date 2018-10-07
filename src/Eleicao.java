@@ -6,7 +6,7 @@ import java.util.LinkedList;
  *
  */
 public class Eleicao {
-	
+
 	public Processo realizarEleicao(int idProcessoIniciador) {
 		LinkedList<Integer> idProcessosConsultados = new LinkedList<>();
 		
@@ -20,6 +20,13 @@ public class Eleicao {
 		}
 		
 		Processo coordenador = atualizarCoordenador(idNovoCoordenador);
+		
+		if(coordenador == null) {
+			for(Processo p : ControladorDeProcessos.getProcessosAtivos()) {
+				if(p.getPid() == idProcessoIniciador)
+					return p;
+			}
+		}
 		
 		return coordenador;
 	}

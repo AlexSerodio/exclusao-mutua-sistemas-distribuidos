@@ -113,7 +113,7 @@ public class Processo {
 		utilizaRecurso = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				System.out.println("Processo " + processo + " está consumindo o recurso por " + randomUsageTime + " ms.");
+				System.out.println("Processo " + processo + " está consumindo o recurso.");
 				setRecursoEmUso(true, processo);
 				
 				try {
