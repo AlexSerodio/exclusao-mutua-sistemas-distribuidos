@@ -39,8 +39,8 @@ public class Processo {
 			listaDeEspera = new LinkedList<>();
 			conexao.conectar(this);
 			
-			if(RecursoCompartilhado.isSendoConsumido())
-				RecursoCompartilhado.getConsumidor().interronperAcessoRecurso();
+			if(ControladorDeProcessos.isSendoConsumido())
+				ControladorDeProcessos.getConsumidor().interronperAcessoRecurso();
 			
 			recursoEmUso = false;
 		}
@@ -59,7 +59,7 @@ public class Processo {
 		Processo coordenador = encontrarCoordenador();
 		
 		coordenador.recursoEmUso = estaEmUso;
-		RecursoCompartilhado.setConsumidor(estaEmUso ? consumidor : null);
+		ControladorDeProcessos.setConsumidor(estaEmUso ? consumidor : null);
 	}
 	
 	private LinkedList<Processo> getListaDeEspera() {
@@ -86,7 +86,7 @@ public class Processo {
 	}
 
 	public void acessarRecursoCompartilhado() {
-		if(RecursoCompartilhado.isUsandoRecurso(this) || this.isCoordenador())
+		if(ControladorDeProcessos.isUsandoRecurso(this) || this.isCoordenador())
 			return;
 		
 		String resultado = conexao.realizarRequisicao("Processo " + this + " quer consumir o recurso.\n");
@@ -143,7 +143,7 @@ public class Processo {
 			conexao.encerrarConexao();
 		} else {
 			removerDaListaDeEspera(this);
-			if(RecursoCompartilhado.isUsandoRecurso(this)) {
+			if(ControladorDeProcessos.isUsandoRecurso(this)) {
 				interronperAcessoRecurso();
 				liberarRecurso();
 			}

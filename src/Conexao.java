@@ -59,7 +59,7 @@ public class Conexao {
 	}
 	
 	public void conectar(Processo coordenador, int porta) {
-		System.out.println("Servidor " + coordenador + " pronto para receber requisicoes.");
+		System.out.println("Coordenador " + coordenador + " pronto para receber requisicoes.");
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
